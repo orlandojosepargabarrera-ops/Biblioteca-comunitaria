@@ -1,0 +1,78 @@
+// Biblioteca Comunitaria - Esquema de base de datos
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Genero {
+  NOVELA
+  CUENTO
+  POESIA
+  ENSAYO
+  INFANTIL
+  HISTORIA
+  CIENCIA
+  TECNOLOGIA
+  AUTOAYUDA
+  OTRO
+}
+
+enum TipoSocio {
+  ADULTO
+  JOVEN
+  INFANTIL
+}
+
+enum EstadoPrestamo {
+  ACTIVO
+  DEVUELTO
+}
+
+model Libro {
+  id              Int        @id @default(autoincrement())
+  titulo          String
+  autor           String
+  genero          Genero
+  isbn            String     @unique
+  totalEjemplares Int        @default(1)
+  disponibles     Int        @default(1)
+  creadoEn        DateTime   @default(now())
+  actualizadoEn   DateTime   @updatedAt
+  prestamos       Prestamo[]
+}
+
+model Socio {
+  id            Int        @id @default(autoincrement())
+  nombre        String
+  apellido      String
+  documento     String     @unique
+  telefono      String?
+  email         String?    @unique
+  direccion     String?
+  tipo          TipoSocio
+  activo        Boolean    @default(true)
+  creadoEn      DateTime   @default(now())
+  actualizadoEn DateTime   @updatedAt
+  prestamos     Prestamo[]
+}
+
+model Prestamo {
+  id               Int             @id @default(autoincrement())
+  libroId          Int
+  socioId          Int
+  fechaPrestamo    DateTime        @default(now())
+  fechaDevolucion  DateTime
+  fechaDevuelto    DateTime?
+  estado           EstadoPrestamo  @default(ACTIVO)
+  observaciones    String?
+  libro            Libro           @relation(fields: [libroId], references: [id])
+  socio            Socio           @relation(fields: [socioId], references: [id])
+
+  @@index([estado])
+  @@index([libroId])
+  @@index([socioId])
+}
